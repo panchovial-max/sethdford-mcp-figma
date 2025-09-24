@@ -5,7 +5,6 @@ export interface FigmaGetFileResponse {
   document: unknown;
   lastModified: string;
   version: string;
-  // partial typing for brevity
 }
 
 export class FigmaClient {
@@ -43,5 +42,26 @@ export class FigmaClient {
     if (!fileId) throw new Error('fileId is required');
     const q = new URLSearchParams({ query }).toString();
     return this.getJson<unknown>(`/files/${encodeURIComponent(fileId)}/search?${q}`);
+  }
+
+  async getNodeImages(fileId: string, nodeIds: string[], format: 'png' | 'jpg' | 'svg' = 'png') {
+    if (!fileId) throw new Error('fileId is required');
+    if (!nodeIds || nodeIds.length === 0) throw new Error('nodeIds is required');
+    const params = new URLSearchParams({ ids: nodeIds.join(','), format });
+    return this.getJson<unknown>(`/images/${encodeURIComponent(fileId)}?${params.toString()}`);
+  }
+
+  async listTeamProjects(teamId: string) {
+    if (!teamId) throw new Error('teamId is required');
+    return this.getJson<unknown>(`/teams/${encodeURIComponent(teamId)}/projects`);
+  }
+
+  async listProjectFiles(projectId: string) {
+    if (!projectId) throw new Error('projectId is required');
+    return this.getJson<unknown>(`/projects/${encodeURIComponent(projectId)}/files`);
+  }
+
+  async getMe() {
+    return this.getJson<unknown>('/me');
   }
 }

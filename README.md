@@ -29,3 +29,9 @@ Add to your client config to register this server. If using package.json-based c
 - Dev: npm run dev
 - Build: npm run build
 - Start: npm start
+
+## Additional Tools
+- figma.getNodeImages(fileId?, nodeIds[], format?)
+- figma.listTeamProjects(teamId)
+- figma.listProjectFiles(projectId)
+- figma.getMe()

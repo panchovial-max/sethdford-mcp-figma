@@ -22,6 +22,7 @@
   "homepage": "https://github.com/panchovial-max/sethdford-mcp-figma#readme",
   "type": "module",
   "devDependencies": {
+    "@types/node": "^24.5.2",
     "@typescript-eslint/eslint-plugin": "^8.44.1",
     "@typescript-eslint/parser": "^8.44.1",
     "eslint": "^9.36.0",
