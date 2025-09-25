@@ -67,6 +67,61 @@ server.tool('figma.getMe', 'Get authenticated user info', {}, async () => {
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
+server.tool('figma.getNodeThumbnail', 'Get thumbnail image for a specific node', {
+  fileId: z.string().optional(),
+  nodeId: z.string(),
+  format: z.enum(['png','jpg','svg']).optional(),
+  scale: z.number().min(0.1).max(4).optional(),
+}, async ({ fileId, nodeId, format, scale }) => {
+  const targetFileId = fileId || defaultFileId;
+  if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
+  const data = await figma.getNodeThumbnail(targetFileId, nodeId, (format as any), scale);
+  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+});
+
+server.tool('figma.getFileImage', 'Get full file image export', {
+  fileId: z.string().optional(),
+  format: z.enum(['png','jpg','svg']).optional(),
+  scale: z.number().min(0.1).max(4).optional(),
+}, async ({ fileId, format, scale }) => {
+  const targetFileId = fileId || defaultFileId;
+  if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
+  const data = await figma.getFileImage(targetFileId, (format as any), scale);
+  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+});
+
+server.tool('figma.getComments', 'Get comments for a Figma file', {
+  fileId: z.string().optional(),
+}, async ({ fileId }) => {
+  const targetFileId = fileId || defaultFileId;
+  if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
+  const data = await figma.getComments(targetFileId);
+  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+});
+
+server.tool('figma.getVersions', 'Get version history for a Figma file', {
+  fileId: z.string().optional(),
+}, async ({ fileId }) => {
+  const targetFileId = fileId || defaultFileId;
+  if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
+  const data = await figma.getVersions(targetFileId);
+  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+});
+
+server.tool('figma.getTeamInfo', 'Get information about a Figma team', {
+  teamId: z.string(),
+}, async ({ teamId }) => {
+  const data = await figma.getTeamInfo(teamId);
+  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+});
+
+server.tool('figma.listTeamFiles', 'List all files in a Figma team', {
+  teamId: z.string(),
+}, async ({ teamId }) => {
+  const data = await figma.listTeamFiles(teamId);
+  return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+});
+
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);

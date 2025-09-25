@@ -64,4 +64,44 @@ export class FigmaClient {
   async getMe() {
     return this.getJson<unknown>('/me');
   }
+
+  async getNodeThumbnail(fileId: string, nodeId: string, format: 'png' | 'jpg' | 'svg' = 'png', scale: number = 1) {
+    if (!fileId) throw new Error('fileId is required');
+    if (!nodeId) throw new Error('nodeId is required');
+    const params = new URLSearchParams({ 
+      ids: nodeId, 
+      format, 
+      scale: scale.toString() 
+    });
+    return this.getJson<unknown>(`/images/${encodeURIComponent(fileId)}?${params.toString()}`);
+  }
+
+  async getFileImage(fileId: string, format: 'png' | 'jpg' | 'svg' = 'png', scale: number = 1) {
+    if (!fileId) throw new Error('fileId is required');
+    const params = new URLSearchParams({ 
+      format, 
+      scale: scale.toString() 
+    });
+    return this.getJson<unknown>(`/images/${encodeURIComponent(fileId)}?${params.toString()}`);
+  }
+
+  async getComments(fileId: string) {
+    if (!fileId) throw new Error('fileId is required');
+    return this.getJson<unknown>(`/files/${encodeURIComponent(fileId)}/comments`);
+  }
+
+  async getVersions(fileId: string) {
+    if (!fileId) throw new Error('fileId is required');
+    return this.getJson<unknown>(`/files/${encodeURIComponent(fileId)}/versions`);
+  }
+
+  async getTeamInfo(teamId: string) {
+    if (!teamId) throw new Error('teamId is required');
+    return this.getJson<unknown>(`/teams/${encodeURIComponent(teamId)}`);
+  }
+
+  async listTeamFiles(teamId: string) {
+    if (!teamId) throw new Error('teamId is required');
+    return this.getJson<unknown>(`/teams/${encodeURIComponent(teamId)}/files`);
+  }
 }

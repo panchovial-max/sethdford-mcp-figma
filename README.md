@@ -11,6 +11,16 @@ MCP server for interacting with Figma files via Figma REST API.
 ## Tools
 - figma.getFile(fileId)
 - figma.searchNodes(fileId, query)
+- figma.getNodeImages(fileId?, nodeIds[], format?)
+- figma.listTeamProjects(teamId)
+- figma.listProjectFiles(projectId)
+- figma.getMe()
+- figma.getNodeThumbnail(fileId?, nodeId, format?, scale?)
+- figma.getFileImage(fileId?, format?, scale?)
+- figma.getComments(fileId?)
+- figma.getVersions(fileId?)
+- figma.getTeamInfo(teamId)
+- figma.listTeamFiles(teamId)
 
 ## Env
 - FIGMA_TOKEN: Personal Access Token from Figma
@@ -35,3 +45,9 @@ Add to your client config to register this server. If using package.json-based c
 - figma.listTeamProjects(teamId)
 - figma.listProjectFiles(projectId)
 - figma.getMe()
+- figma.getNodeThumbnail(fileId?, nodeId, format?, scale?)
+- figma.getFileImage(fileId?, format?, scale?)
+- figma.getComments(fileId?)
+- figma.getVersions(fileId?)
+- figma.getTeamInfo(teamId)
+- figma.listTeamFiles(teamId)
