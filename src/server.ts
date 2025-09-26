@@ -3,11 +3,22 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
 import { FigmaClient } from './figma.js';
+import { FigmaOAuthClient } from './oauth.js';
 
 const token = process.env.FIGMA_TOKEN || '';
 const defaultFileId = process.env.FIGMA_FILE_ID || '';
 
 const figma = new FigmaClient(token);
+
+// OAuth configuration (optional)
+const oauthConfig = {
+  clientId: process.env.FIGMA_CLIENT_ID || '',
+  clientSecret: process.env.FIGMA_CLIENT_SECRET || '',
+  redirectUri: process.env.FIGMA_REDIRECT_URI || 'http://localhost:3000/oauth/callback',
+  port: parseInt(process.env.OAUTH_PORT || '3000')
+};
+
+const oauthClient = oauthConfig.clientId ? new FigmaOAuthClient(oauthConfig) : null;
 
 const server = new McpServer({
   name: 'sethdford-mcp-figma',
@@ -121,6 +132,74 @@ server.tool('figma.listTeamFiles', 'List all files in a Figma team', {
   const data = await figma.listTeamFiles(teamId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
+
+// OAuth tools (only available if OAuth is configured)
+if (oauthClient) {
+  server.tool('figma.oauth.generateAuthUrl', 'Generate OAuth authorization URL', {}, async () => {
+    const authData = await oauthClient.generateAuthUrl();
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          authUrl: authData.url,
+          codeVerifier: authData.codeVerifier,
+          state: authData.state,
+          instructions: 'Visit the authUrl in your browser to authorize the app. Save the codeVerifier and state for the next step.'
+        }) 
+      }] 
+    };
+  });
+
+  server.tool('figma.oauth.exchangeCode', 'Exchange authorization code for access token', {
+    code: z.string(),
+    codeVerifier: z.string(),
+    state: z.string(),
+  }, async ({ code, codeVerifier, state }) => {
+    const tokens = await oauthClient.exchangeCodeForToken(code, codeVerifier, state);
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresIn: tokens.expires_in,
+          tokenType: tokens.token_type,
+          instructions: 'Use the accessToken as your FIGMA_TOKEN in future requests.'
+        }) 
+      }] 
+    };
+  });
+
+  server.tool('figma.oauth.refreshToken', 'Refresh access token using refresh token', {
+    refreshToken: z.string(),
+  }, async ({ refreshToken }) => {
+    const tokens = await oauthClient.refreshToken(refreshToken);
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiresIn: tokens.expires_in,
+          tokenType: tokens.token_type
+        }) 
+      }] 
+    };
+  });
+
+  server.tool('figma.oauth.getConfig', 'Get OAuth configuration for client setup', {}, async () => {
+    const config = oauthClient.getConfig();
+    return { 
+      content: [{ 
+        type: 'text', 
+        text: JSON.stringify({
+          ...config,
+          instructions: 'Use these values to configure your Figma OAuth app.'
+        }) 
+      }] 
+    };
+  });
+}
 
 async function main() {
   const transport = new StdioServerTransport();

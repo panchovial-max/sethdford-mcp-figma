@@ -31,7 +31,10 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
+    "cors": "^2.8.5",
     "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "pkce-challenge": "^5.0.0",
     "undici": "^7.16.0",
     "zod": "^3.25.76"
   },

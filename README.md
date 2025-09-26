@@ -8,6 +8,11 @@ MCP server for interacting with Figma files via Figma REST API.
 3. Dev: npm run dev
 4. Build: npm run build && npm start
 
+### OAuth Setup (Optional)
+1. Create a Figma OAuth app at https://www.figma.com/developers/oauth
+2. Set FIGMA_CLIENT_ID and FIGMA_CLIENT_SECRET in .env
+3. Use OAuth tools to authenticate instead of Personal Access Token
+
 ## Tools
 - figma.getFile(fileId)
 - figma.searchNodes(fileId, query)
@@ -25,6 +30,12 @@ MCP server for interacting with Figma files via Figma REST API.
 ## Env
 - FIGMA_TOKEN: Personal Access Token from Figma
 - FIGMA_FILE_ID: Optional default file ID
+
+### OAuth Configuration (Optional)
+- FIGMA_CLIENT_ID: OAuth client ID from Figma app
+- FIGMA_CLIENT_SECRET: OAuth client secret from Figma app  
+- FIGMA_REDIRECT_URI: OAuth redirect URI (default: http://localhost:3000/oauth/callback)
+- OAUTH_PORT: Port for OAuth callback server (default: 3000)
 
 ## Configuration (MCP)
 Add to your client config to register this server. If using package.json-based config, this repo already adds an mcp.servers entry.
@@ -51,3 +62,9 @@ Add to your client config to register this server. If using package.json-based c
 - figma.getVersions(fileId?)
 - figma.getTeamInfo(teamId)
 - figma.listTeamFiles(teamId)
+
+### OAuth Tools (if OAuth configured)
+- figma.oauth.generateAuthUrl()
+- figma.oauth.exchangeCode(code, codeVerifier, state)
+- figma.oauth.refreshToken(refreshToken)
+- figma.oauth.getConfig()
