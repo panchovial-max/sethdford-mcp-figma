@@ -8,7 +8,8 @@ import { FigmaOAuthClient } from './oauth.js';
 const token = process.env.FIGMA_TOKEN || '';
 const defaultFileId = process.env.FIGMA_FILE_ID || '';
 
-const figma = new FigmaClient(token);
+// Only create FigmaClient if we have a token or OAuth is not configured
+const figma = token ? new FigmaClient(token) : null;
 
 // OAuth configuration (optional)
 const oauthConfig = {
@@ -25,14 +26,22 @@ const server = new McpServer({
   version: '0.1.0',
 });
 
+// Helper function to check authentication
+function requireAuth() {
+  if (!figma) {
+    throw new Error('FIGMA_TOKEN is required. Set it in .env or use OAuth tools to authenticate.');
+  }
+}
+
 server.tool('figma.getFile', 'Fetch a Figma file by ID', {
   fileId: z.string().optional().describe('Figma file ID; falls back to FIGMA_FILE_ID'),
 }, async ({ fileId }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) {
     throw new Error('fileId is required (or set FIGMA_FILE_ID)');
   }
-  const data = await figma.getFile(targetFileId);
+  const data = await figma!.getFile(targetFileId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
@@ -40,11 +49,12 @@ server.tool('figma.searchNodes', 'Search nodes in a Figma file by query', {
   fileId: z.string().optional(),
   query: z.string().min(1),
 }, async ({ fileId, query }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) {
     throw new Error('fileId is required (or set FIGMA_FILE_ID)');
   }
-  const data = await figma.searchNodes(targetFileId, query);
+  const data = await figma!.searchNodes(targetFileId, query);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
@@ -53,28 +63,32 @@ server.tool('figma.getNodeImages', 'Get rendered images for node IDs', {
   nodeIds: z.array(z.string()).min(1),
   format: z.enum(['png','jpg','svg']).optional(),
 }, async ({ fileId, nodeIds, format }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
-  const data = await figma.getNodeImages(targetFileId, nodeIds, (format as any));
+  const data = await figma!.getNodeImages(targetFileId, nodeIds, (format as any));
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.listTeamProjects', 'List projects for a Figma team', {
   teamId: z.string(),
 }, async ({ teamId }) => {
-  const data = await figma.listTeamProjects(teamId);
+  requireAuth();
+  const data = await figma!.listTeamProjects(teamId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.listProjectFiles', 'List files under a Figma project', {
   projectId: z.string(),
 }, async ({ projectId }) => {
-  const data = await figma.listProjectFiles(projectId);
+  requireAuth();
+  const data = await figma!.listProjectFiles(projectId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.getMe', 'Get authenticated user info', {}, async () => {
-  const data = await figma.getMe();
+  requireAuth();
+  const data = await figma!.getMe();
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
@@ -84,9 +98,10 @@ server.tool('figma.getNodeThumbnail', 'Get thumbnail image for a specific node',
   format: z.enum(['png','jpg','svg']).optional(),
   scale: z.number().min(0.1).max(4).optional(),
 }, async ({ fileId, nodeId, format, scale }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
-  const data = await figma.getNodeThumbnail(targetFileId, nodeId, (format as any), scale);
+  const data = await figma!.getNodeThumbnail(targetFileId, nodeId, (format as any), scale);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
@@ -95,41 +110,46 @@ server.tool('figma.getFileImage', 'Get full file image export', {
   format: z.enum(['png','jpg','svg']).optional(),
   scale: z.number().min(0.1).max(4).optional(),
 }, async ({ fileId, format, scale }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
-  const data = await figma.getFileImage(targetFileId, (format as any), scale);
+  const data = await figma!.getFileImage(targetFileId, (format as any), scale);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.getComments', 'Get comments for a Figma file', {
   fileId: z.string().optional(),
 }, async ({ fileId }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
-  const data = await figma.getComments(targetFileId);
+  const data = await figma!.getComments(targetFileId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.getVersions', 'Get version history for a Figma file', {
   fileId: z.string().optional(),
 }, async ({ fileId }) => {
+  requireAuth();
   const targetFileId = fileId || defaultFileId;
   if (!targetFileId) { throw new Error('fileId is required (or set FIGMA_FILE_ID)'); }
-  const data = await figma.getVersions(targetFileId);
+  const data = await figma!.getVersions(targetFileId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.getTeamInfo', 'Get information about a Figma team', {
   teamId: z.string(),
 }, async ({ teamId }) => {
-  const data = await figma.getTeamInfo(teamId);
+  requireAuth();
+  const data = await figma!.getTeamInfo(teamId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
 server.tool('figma.listTeamFiles', 'List all files in a Figma team', {
   teamId: z.string(),
 }, async ({ teamId }) => {
-  const data = await figma.listTeamFiles(teamId);
+  requireAuth();
+  const data = await figma!.listTeamFiles(teamId);
   return { content: [{ type: 'text', text: JSON.stringify(data) }] };
 });
 
